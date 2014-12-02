@@ -12,6 +12,8 @@ public class CommonUtil {
 		// 设置为ture只获取图片大小
 		opts.inJustDecodeBounds = true;
 		opts.inPreferredConfig = Bitmap.Config.RGB_565;
+		opts.inPurgeable = true;//允许可清除  
+		opts.inInputShareable = true;// 以上options的两个属性必须联合使用才会有效果
 		// 返回为空
 		Bitmap bitmap = BitmapFactory.decodeFile(path, opts);
 		int width = opts.outWidth;

@@ -8,6 +8,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
@@ -27,6 +28,7 @@ import android.widget.TextView;
 import com.zzy.threadpooldemo.FileUtil;
 import com.zzy.threadpooldemo.MemoCache;
 import com.zzy.threadpooldemo.MyListAsyncTask;
+import com.zzy.threadpooldemo.PlayerActivity;
 import com.zzy.threadpooldemo.R;
 import com.zzy.threadpooldemo.util.CommonUtil;
 
@@ -101,6 +103,7 @@ public class ListFragment extends Fragment implements OnItemClickListener {
 		rootView = inflater.inflate(R.layout.list_fragment, container, false);
 		lv_list = (ListView) rootView.findViewById(R.id.lv_list);
 		lv_list.setAdapter(new imageListAdapter());
+		lv_list.setOnItemClickListener(this);
 		return rootView;
 	}
 
@@ -112,8 +115,13 @@ public class ListFragment extends Fragment implements OnItemClickListener {
 
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-		
-		
+		ViewHolder holder=(ViewHolder)view.getTag();
+		String path=holder.text.getTag(R.string.list_item_video_path_tag).toString();
+		Bundle b=new Bundle();
+		b.putString("path", path);
+		Intent in=new Intent(getActivity(), PlayerActivity.class);
+		in.putExtras(b);
+		startActivity(in);
 	}
 	
 	private class imageListAdapter extends BaseAdapter {
@@ -161,7 +169,7 @@ public class ListFragment extends Fragment implements OnItemClickListener {
 			}
 
 			holder.text.setText("图片" + position);
-			holder.text.setTag(R.string.list_item_video_path_tag,vedioRootPath+"video.avi");// 给每个条目绑定一个对应的视频地址
+			holder.text.setTag(R.string.list_item_video_path_tag,vedioRootPath+"看看我的腿.mp4");// 给每个条目绑定一个对应的视频地址
 			holder.image.setTag(images[position]);
 			// 从内存缓存中读取图片---1级缓存
 			Bitmap map = mc.getBitmap(images[position]);
@@ -176,8 +184,9 @@ public class ListFragment extends Fragment implements OnItemClickListener {
 			// 从SD卡中读取图片---2级缓存
 			File file=new File(rootPath  +images[position].substring(images[position].lastIndexOf("/")+1));
 			if (fu.isFileExists(file)) {
-				mc.putBitmap(images[position], CommonUtil.convertToBitmap(file.getAbsolutePath(),200,200));// 重新缓存到内存中
-				holder.image.setImageBitmap(BitmapFactory.decodeFile(file.getAbsolutePath()));
+				map=CommonUtil.convertToBitmap(file.getAbsolutePath(),200,200);
+				mc.putBitmap(images[position],map );// 重新缓存到内存中
+				holder.image.setImageBitmap(map);
 				if (holder.progess.getProgress() != 0)
 					holder.progess.setProgress(0);
 				if (holder.progess.getVisibility() != View.INVISIBLE)

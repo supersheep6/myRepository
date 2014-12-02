@@ -2,6 +2,7 @@ package com.zzy.threadpooldemo;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.pm.ActivityInfo;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnBufferingUpdateListener;
@@ -13,6 +14,7 @@ import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceHolder.Callback;
 import android.view.SurfaceView;
+import android.widget.Toast;
 
 public class PlayerActivity extends Activity implements Callback, OnBufferingUpdateListener, OnCompletionListener, OnPreparedListener {
 
@@ -39,8 +41,12 @@ public class PlayerActivity extends Activity implements Callback, OnBufferingUpd
 
 		/* 设置风格 */
 		holder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
-		
-		path=getIntent().getExtras().getString("path");
+
+		path = getIntent().getExtras().getString("path");
+
+		if (getRequestedOrientation() != ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE) {
+			setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+		}
 	}
 
 	private void playVideo() {
@@ -51,7 +57,6 @@ public class PlayerActivity extends Activity implements Callback, OnBufferingUpd
 
 			/* 设置媒体文件路径 */
 			mMediaPlayer.setDataSource(path);
-
 			/* 设置通过SurfaceView来显示画面 */
 			mMediaPlayer.setDisplay(holder);
 
@@ -65,7 +70,8 @@ public class PlayerActivity extends Activity implements Callback, OnBufferingUpd
 			mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
 
 		} catch (Exception e) {
-			System.out.println(e.getMessage());
+			Toast.makeText(this,"播放出错："+e.getMessage() , Toast.LENGTH_SHORT).show();
+			System.out.println("播放出错："+e.getMessage());
 		}
 	}
 
@@ -92,9 +98,7 @@ public class PlayerActivity extends Activity implements Callback, OnBufferingUpd
 	public void onPrepared(MediaPlayer mp) {
 		mVideoWidth = mMediaPlayer.getVideoWidth();
 		mVideoHeight = mMediaPlayer.getVideoHeight();
-
 		if (mVideoWidth != 0 && mVideoHeight != 0) {
-
 			/* 设置视频的宽度和高度 */
 			holder.setFixedSize(mVideoWidth, mVideoHeight);
 
