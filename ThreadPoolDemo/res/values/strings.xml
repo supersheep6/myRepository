@@ -5,6 +5,8 @@
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
     <string name="list_item_view_tag">list_item_tag_id</string>
+    <string name="grid_item_view_tag">grid_item_tag_id</string>
     <string name="list_item_video_path_tag">list_item_video_path_tag</string>
+    <string name="gird_item_video_path_tag">grid_item_video_path_tag</string>
 
 </resources>

@@ -10,20 +10,24 @@ import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaPlayer.OnPreparedListener;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.PowerManager;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceHolder.Callback;
 import android.view.SurfaceView;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 public class PlayerActivity extends Activity implements Callback, OnBufferingUpdateListener, OnCompletionListener, OnPreparedListener {
 
-	private int mVideoWidth;
-	private int mVideoHeight;
+	private float mVideoWidth;
+	private float mVideoHeight;
 	private MediaPlayer mMediaPlayer;
 	private SurfaceView mPreview;
 	private SurfaceHolder holder;
 	private String path;
+	PowerManager.WakeLock wl = null;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -44,9 +48,14 @@ public class PlayerActivity extends Activity implements Callback, OnBufferingUpd
 
 		path = getIntent().getExtras().getString("path");
 
+		// 设置横屏
 		if (getRequestedOrientation() != ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE) {
 			setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
 		}
+
+//		PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+//		wl = pm.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK, "");
+//		wl.acquire();// 申请锁这个里面会调用PowerManagerService里面acquireWakeLock()
 	}
 
 	private void playVideo() {
@@ -63,6 +72,9 @@ public class PlayerActivity extends Activity implements Callback, OnBufferingUpd
 			/* 准备 */
 			mMediaPlayer.prepare();
 
+			// 设置播放时屏幕常亮
+			mMediaPlayer.setScreenOnWhilePlaying(true);
+
 			/* 设置事件监听 */
 			mMediaPlayer.setOnBufferingUpdateListener(this);
 			mMediaPlayer.setOnCompletionListener(this);
@@ -70,8 +82,8 @@ public class PlayerActivity extends Activity implements Callback, OnBufferingUpd
 			mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
 
 		} catch (Exception e) {
-			Toast.makeText(this,"播放出错："+e.getMessage() , Toast.LENGTH_SHORT).show();
-			System.out.println("播放出错："+e.getMessage());
+			Toast.makeText(this, "播放出错：" + e.getMessage(), Toast.LENGTH_SHORT).show();
+			System.out.println("播放出错：" + e.getMessage());
 		}
 	}
 
@@ -98,14 +110,39 @@ public class PlayerActivity extends Activity implements Callback, OnBufferingUpd
 	public void onPrepared(MediaPlayer mp) {
 		mVideoWidth = mMediaPlayer.getVideoWidth();
 		mVideoHeight = mMediaPlayer.getVideoHeight();
+		float scale = mVideoWidth / mVideoHeight;
+		float targath = (float) mPreview.getWidth() / scale;
 		if (mVideoWidth != 0 && mVideoHeight != 0) {
 			/* 设置视频的宽度和高度 */
-			holder.setFixedSize(mVideoWidth, mVideoHeight);
-
+			holder.setFixedSize(mPreview.getWidth(), (int) targath);
+			mPreview.setLayoutParams(new LinearLayout.LayoutParams(mPreview.getWidth(), (int) targath));
 			/* 开始播放 */
 			mMediaPlayer.start();
+
 		}
 
+	}
+
+	@Override
+	protected void onPause() {
+		if (mMediaPlayer != null) {
+			mMediaPlayer.pause();
+		}
+		super.onPause();
+	}
+
+	@Override
+	protected void onResume() {
+		if (mMediaPlayer != null) {
+			mMediaPlayer.start();
+		}
+		super.onResume();
+	}
+
+	@Override
+	protected void onDestroy() {
+
+		super.onDestroy();
 	}
 
 	@Override
